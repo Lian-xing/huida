@@ -10,6 +10,12 @@
     }
 }
 
+@mixin border-none() {
+    &::after {
+        display: none;
+    }
+}
+
 @mixin bg-image($url) {
     background: url($url + '@2x.png');
     background-size: 100% 100%;

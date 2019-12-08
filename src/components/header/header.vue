@@ -223,9 +223,9 @@ export default {
 
     .bull-icon {
       @include bg-image("./img/bulletin");
-      background-size: 100% 100%;
       width: 0.44rem;
       height: 0.24rem;
+      margin-top: 0.05rem;
     }
 
     .bulletin {

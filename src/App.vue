@@ -2,17 +2,17 @@
   <div id="app" class="wrapper">
     <v-header :seller="seller" />
     <div class="content border-1px">
-      <nav class="content-top">
-        <span>
+      <div class="nav">
+        <div>
           <router-link to="/goods">商品</router-link>
-        </span>
-        <span>
+        </div>
+        <div>
           <router-link to="/ratings">评价</router-link>
-        </span>
-        <span>
+        </div>
+        <div>
           <router-link to="/seller">商家</router-link>
-        </span>
-      </nav>
+        </div>
+      </div>
     </div>
     <router-view />
   </div>
@@ -21,7 +21,7 @@
 <script>
 import VHeader from "@/components/header/header";
 
-import getData from "./api/header.js";
+import getData from "./api/data.js";
 
 export default {
   data() {
@@ -46,11 +46,11 @@ export default {
 
 @import "./common/sass/mixin.scss";
 .content {
-  .content-top {
+  .nav {
     height: 0.8rem;
     @include border-1px(rgba(7, 17, 27, 0.1));
     display: flex;
-    & > span {
+    & > div {
       flex: 1;
       text-align: center;
       line-height: 0.8rem;
