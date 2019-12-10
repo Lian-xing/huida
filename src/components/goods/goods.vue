@@ -7,7 +7,7 @@
           :class="{active: currentIndex === index}"
           v-for="(item,index) in goods"
           :key="index"
-          @click="fn()"
+          @click="currentList(index)"
         >
           <span class="text-con">
             <span class="icon" :class="classMap[item.type]" v-if="item.type > 0"></span>
@@ -36,12 +36,22 @@
                   <span class="new-price">￥{{ food.price }}</span>
                   <span class="old-price" v-if="food.oldPrice">￥{{ food.oldPrice }}</span>
                 </p>
+                <div class="cart-control-wrapper">
+                  <cart-control :food="food" @addFood="addFood" />
+                </div>
               </div>
             </li>
           </ul>
         </li>
       </ul>
     </div>
+    <shop-car
+      v-if="seller.deliveryPrice"
+      :deliveryPrice="seller.deliveryPrice"
+      :minPrice="seller.minPrice"
+      :selectFoods="selectFoods"
+      ref="shopCar"
+    />
   </div>
 </template>
 
@@ -50,7 +60,15 @@ import BScroll from "@better-scroll/core";
 import getData from "../../api/data.js";
 import { click } from "@better-scroll/shared-utils";
 
+import ShopCar from "@/components/shopCar/shopCar.vue";
+import CartControl from "@/components/cartControl/cartControl.vue";
+
 export default {
+  props: {
+    seller: {
+      type: Object
+    }
+  },
   data() {
     return {
       goods: [],
@@ -70,6 +88,15 @@ export default {
     this.computedHeight();
   },
   computed: {
+    selectFoods() {
+      let foods = [];
+      this.goods.forEach(item => {
+        item.foods.forEach(food => {
+          foods.push(food);
+        });
+      });
+      return foods;
+    },
     currentIndex() {
       for (let i = 0; i < this.listHeight.length; i++) {
         let height1 = this.listHeight[i];
@@ -109,7 +136,21 @@ export default {
         height += item.clientHeight;
         this.listHeight.push(height);
       });
+    },
+    // 点击左侧滚动到右侧对应内容
+    currentList(index) {
+      let foodsList = this.$refs.foodList;
+      let food = foodsList[index];
+      this.foodScroll.scrollToElement(food, 1000);
+    },
+    addFood(el, food) {
+      // console.log(el, food);
+      this.$refs.shopCar.drop(el, food);
     }
+  },
+  components: {
+    ShopCar,
+    CartControl
   }
 };
 </script>
@@ -240,6 +281,11 @@ export default {
               color: rgb(147, 153, 159);
               text-decoration: line-through;
             }
+          }
+          .cart-control-wrapper {
+            position: absolute;
+            right: 0;
+            bottom: 0.2rem;
           }
         }
       }
