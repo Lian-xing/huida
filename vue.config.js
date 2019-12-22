@@ -4,6 +4,7 @@ const goods = dataApp.goods;
 const ratings = dataApp.ratings;
 
 module.exports = {
+    publicPath: process.env.NODE_ENV === 'production' ? '' : '/',
     lintOnSave: false,
     devServer: {
         before(app) {

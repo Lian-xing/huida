@@ -1,7 +1,7 @@
 <template>
   <div class="shop-car">
     <div class="content">
-      <div class="content-left">
+      <div class="content-left" @click="toggleList">
         <div class="logo-box">
           <div class="logo" :class="{ 'highLight': totalCount > 0 }">
             <i class="icon-shopping_cart"></i>
@@ -22,10 +22,38 @@
         </transition>
       </div>
     </div>
+    <transition name="fold">
+      <div class="cart-detail" v-show="showList">
+        <div class="cart-detail-header">
+          <h6 class="title">购物车</h6>
+          <div class="empty" @click.stop.prevent="empty()">清空</div>
+        </div>
+        <div class="cart-detail-content" ref="cartList">
+          <ul>
+            <li class="cart-detail-item" v-for="(food,index) in selectFoods" :key="index">
+              <div class="sub-total">
+                <h6 class="name">{{ food.name }}</h6>
+                <div class="price">￥{{ food.price * food.count }}</div>
+              </div>
+              <div class="cart-control-wrapper">
+                <cart-control :food="food" @addFood="addFood" />
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </transition>
+    <transition name="fade">
+      <div class="mask" v-if="showList" @click.stop.prevent="fold = false"></div>
+    </transition>
   </div>
 </template>
 
 <script>
+import BScroll from "@better-scroll/core";
+
+import CartControl from "@/components/cartControl/cartControl.vue";
+
 export default {
   props: {
     selectFoods: {
@@ -55,7 +83,8 @@ export default {
         { show: false }
       ],
       dropBalls: [], // 下落的小球
-      food: {}
+      food: {},
+      fold: true
     };
   },
   computed: {
@@ -92,6 +121,25 @@ export default {
       } else {
         return "highLight";
       }
+    },
+    showList() {
+      if (!this.totalCount) {
+        this.fold = false;
+        return false;
+      }
+      let show = this.fold;
+      if (show) {
+        this.$nextTick(() => {
+          if (!this.scroll) {
+            this.scroll = new BScroll(this.$refs.cartList, {
+              click: true
+            });
+          } else {
+            this.scroll.refresh(); // 当DOM发生变化时重新计算滚动高度
+          }
+        });
+      }
+      return show;
     }
   },
   methods: {
@@ -99,7 +147,7 @@ export default {
       // console.log(el, food);
       this.food = food;
       for (let i = 0; i < this.balls.length; i++) {
-        const ball = this.balls[i];
+        let ball = this.balls[i];
         if (!ball.show) {
           ball.show = true;
           ball.el = el;
@@ -128,7 +176,7 @@ export default {
       }
     },
     dropping(el, done) {
-      el.offsetTop;  // 保证小球位置实时更新 
+      el.offsetTop; // 保证小球位置实时更新
       this.$nextTick(() => {
         el.style.webkitTransform = "translate3d(0, 0, 0)";
         el.style.transform = "translate3d(0, 0, 0)";
@@ -144,22 +192,44 @@ export default {
         el.style.display = "none";
         ball.show = false;
       }
+    },
+    toggleList() {
+      if (!this.totalCount) {
+        return;
+      }
+      this.fold = !this.fold;
+    },
+    empty() {
+      this.selectFoods.forEach(food => {
+        food.count && (food.count = 0);
+      });
+    },
+    addFood(el, food) {
+      this.drop(el, food);
     }
+  },
+  components: {
+    CartControl
   }
 };
 </script>
 
 <style lang="scss" scoped>
+@import "@/common/sass/mixin.scss";
+
 .shop-car {
   position: fixed;
   left: 0;
   bottom: 0;
   width: 100%;
-  height: 0.96rem;
+  z-index: 10;
   font-size: 0;
   .content {
+    position: relative;
+    z-index: 10;
     display: flex;
     color: rgba(255, 255, 255, 0.4);
+    height: 0.96rem;
     .content-left {
       flex: 1;
       background-color: #141d27;
@@ -201,6 +271,7 @@ export default {
         }
       }
       .allPrice {
+        max-width: 1.3rem;
         display: inline-block;
         vertical-align: top;
         font-size: 0.32rem;
@@ -241,15 +312,104 @@ export default {
       position: absolute;
       bottom: 0.55rem;
       left: 0.65rem;
-      width: 0.32rem;
-      height: 0.32rem;
-      transition: all 0.4s cubic-bezier(0, 0.42, 0.42, 1.19);
+      z-index: 10;
+      width: 0.64rem;
+      height: 0.64rem;
+      transition: all 0.4s cubic-bezier(0, 0.29, 0.33, 1);
       .ball-inner {
         width: 100%;
         height: 100%;
         border-radius: 50%;
         transition: all 0.4s linear;
       }
+    }
+  }
+  .cart-detail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 5;
+    transform: translate3d(0, -100%, 0);
+    &.fold-enter-active,
+    &.fold-leave-active {
+      transition: all 0.5s linear;
+    }
+    &.fold-enter,
+    &.fold-leave-to {
+      transform: translate3d(0, 0, 0);
+    }
+    .cart-detail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 0.8rem;
+      padding: 0 0.36rem;
+      background-color: #f3f5f7;
+      border-bottom: 1px solid rgba(7, 17, 27, 0.1);
+      .title {
+        font-size: 0.28rem;
+        font-weight: 200;
+        color: rgb(7, 17, 27);
+      }
+      .empty {
+        font-size: 0.24rem;
+        color: rgb(0, 160, 220);
+      }
+    }
+    .cart-detail-content {
+      max-height: 4.35rem;
+      padding: 0 0.36rem;
+      background-color: rgb(255, 255, 255);
+      overflow: hidden;
+      .cart-detail-item {
+        height: 0.96rem;
+        @include border-1px(rgba(7, 17, 27, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        &:last-child {
+          @include border-none;
+        }
+        .sub-total {
+          flex: 1;
+          display: inline-flex;
+          justify-content: space-between;
+          margin-right: 0.12rem;
+          .name {
+            line-height: 0.48rem;
+            font-size: 0.28rem;
+            font-weight: 700;
+            color: rgb(7, 17, 27);
+          }
+          .price {
+            font-size: 0.28rem;
+            font-weight: 700;
+            color: rgb(240, 20, 20);
+            line-height: 0.48rem;
+          }
+        }
+      }
+    }
+  }
+  .mask {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    background-color: rgba(7, 17, 27, 0.6);
+    z-index: 3;
+    backdrop-filter: blur(10px); // ios显示
+    opacity: 1;
+    &.fade-enter-active,
+    &.fade-leave-active {
+      transition: all 0.5s linear;
+    }
+    &.fade-enter,
+    &.fade-leave-to {
+      opacity: 0;
     }
   }
 }

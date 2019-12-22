@@ -238,6 +238,17 @@ export default {
   }
 
   .detail {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(7, 17, 27, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 100;
     &.fade-enter,
     &.fade-leave-to {
       opacity: 0;
@@ -250,16 +261,6 @@ export default {
     &.fade-leave {
       opacity: 1;
     }
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    position: fixed;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(7, 17, 27, 0.8);
-    z-index: 100;
     .detail-container {
       min-height: 100%;
       .detail-main {

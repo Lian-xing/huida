@@ -1,57 +1,65 @@
 <template>
-  <div class="goods">
-    <div class="nav-menu" ref="navMenu">
-      <ul class="menu-list">
-        <li
-          class="list-item"
-          :class="{active: currentIndex === index}"
-          v-for="(item,index) in goods"
-          :key="index"
-          @click="currentList(index)"
-        >
-          <span class="text-con">
-            <span class="icon" :class="classMap[item.type]" v-if="item.type > 0"></span>
-            {{ item.name }}
-          </span>
-        </li>
-      </ul>
-    </div>
-    <div class="goods-menu" ref="foodsMenu">
-      <ul>
-        <li class="list" v-for="(item,index) in goods" :key="index" ref="foodList">
-          <h5 class="title">{{ item.name }}</h5>
-          <ul>
-            <li class="list-item" v-for="(food,idx) in item.foods" :key="idx">
-              <div class="img">
-                <img width="100%" height="100%" :src="food.image" alt />
-              </div>
-              <div class="content">
-                <h6 class="name">{{ food.name }}</h6>
-                <p class="description" v-if="food.description">{{ food.description }}</p>
-                <p class="sell">
-                  <span class="sell-count">月售{{ food.sellCount }}份</span>
-                  <span>好评率{{ food.rating }}%</span>
-                </p>
-                <p class="price">
-                  <span class="new-price">￥{{ food.price }}</span>
-                  <span class="old-price" v-if="food.oldPrice">￥{{ food.oldPrice }}</span>
-                </p>
-                <div class="cart-control-wrapper">
-                  <cart-control :food="food" @addFood="addFood" />
+  <div>
+    <div class="goods">
+      <div class="nav-menu" ref="navMenu">
+        <ul class="menu-list">
+          <li
+            class="list-item"
+            :class="{active: currentIndex === index}"
+            v-for="(item,index) in goods"
+            :key="index"
+            @click="currentList(index)"
+          >
+            <span class="text-con border-1px">
+              <span class="icon" :class="classMap[item.type]" v-if="item.type > 0"></span>
+              {{ item.name }}
+            </span>
+          </li>
+        </ul>
+      </div>
+      <div class="goods-menu" ref="foodsMenu">
+        <ul>
+          <li class="list" v-for="(item,index) in goods" :key="index" ref="foodList">
+            <h5 class="title">{{ item.name }}</h5>
+            <ul>
+              <li
+                class="list-item border-1px"
+                @click="goDetail(food)"
+                v-for="(food,idx) in item.foods"
+                :key="idx"
+              >
+                <div class="img">
+                  <img width="100%" height="100%" :src="food.icon" alt />
                 </div>
-              </div>
-            </li>
-          </ul>
-        </li>
-      </ul>
+                <div class="content">
+                  <h6 class="name">{{ food.name }}</h6>
+                  <p class="description" v-if="food.description">{{ food.description }}</p>
+                  <p class="sell">
+                    <span class="sell-count">月售{{ food.sellCount }}份</span>
+                    <span>好评率{{ food.rating }}%</span>
+                  </p>
+                  <p class="price">
+                    <span class="new-price">￥{{ food.price }}</span>
+                    <span class="old-price" v-if="food.oldPrice">￥{{ food.oldPrice }}</span>
+                  </p>
+                  <div class="cart-control-wrapper">
+                    <cart-control :food="food" @addFood="addFood" />
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <shop-car
+        v-if="seller.deliveryPrice"
+        :deliveryPrice="seller.deliveryPrice"
+        :minPrice="seller.minPrice"
+        :selectFoods="selectFoods"
+        ref="shopCar"
+      />
     </div>
-    <shop-car
-      v-if="seller.deliveryPrice"
-      :deliveryPrice="seller.deliveryPrice"
-      :minPrice="seller.minPrice"
-      :selectFoods="selectFoods"
-      ref="shopCar"
-    />
+    <foods-detail ref="detail" :food="selectedFood" @addFirst="addFood" />
   </div>
 </template>
 
@@ -62,6 +70,7 @@ import { click } from "@better-scroll/shared-utils";
 
 import ShopCar from "@/components/shopCar/shopCar.vue";
 import CartControl from "@/components/cartControl/cartControl.vue";
+import FoodsDetail from "@/components/foodsDetail/foodsDetail.vue";
 
 export default {
   props: {
@@ -74,7 +83,8 @@ export default {
       goods: [],
       classMap: [],
       listHeight: [],
-      scrollY: 0
+      scrollY: 0,
+      selectedFood: {}
     };
   },
   async created() {
@@ -92,7 +102,7 @@ export default {
       let foods = [];
       this.goods.forEach(item => {
         item.foods.forEach(food => {
-          foods.push(food);
+          food.count && foods.push(food);
         });
       });
       return foods;
@@ -146,11 +156,17 @@ export default {
     addFood(el, food) {
       // console.log(el, food);
       this.$refs.shopCar.drop(el, food);
+    },
+    goDetail(food) {
+      // 跳转详情页
+      this.$refs.detail.show();
+      this.selectedFood = food;
     }
   },
   components: {
     ShopCar,
-    CartControl
+    CartControl,
+    FoodsDetail
   }
 };
 </script>
@@ -167,12 +183,13 @@ export default {
   .nav-menu {
     flex: 0 0 1.6rem;
     width: 1.6rem;
+    background-color: #f3f5f7;
     .menu-list {
-      background-color: #f3f5f7;
       .list-item {
         padding: 0 0.24rem;
         display: table;
-        width: 1.12rem;
+        box-sizing: border-box;
+        width: 100%;
         height: 1.08rem;
         &.active {
           background-color: #fff;

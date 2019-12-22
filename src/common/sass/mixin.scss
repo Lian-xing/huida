@@ -9,6 +9,17 @@
         content: "";
     }
 }
+@mixin border-r-1px($color) {
+    position: relative;
+    &::after {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        border-right: 1px solid $color;
+        content: "";
+    }
+}
 
 @mixin border-none() {
     &::after {

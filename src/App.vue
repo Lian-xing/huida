@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="wrapper">
     <v-header :seller="seller" />
-    <div class="content border-1px">
+    <div class="content">
       <div class="nav">
         <div>
           <router-link to="/goods">商品</router-link>
@@ -14,11 +14,15 @@
         </div>
       </div>
     </div>
-    <router-view :seller="seller" />
+    <keep-alive>
+      <router-view :seller="seller" />
+    </keep-alive>
   </div>
 </template>
 
 <script>
+import qs from "query-string";
+
 import VHeader from "@/components/header/header";
 
 import getData from "./api/data.js";
@@ -30,8 +34,9 @@ export default {
     };
   },
   async created() {
-    let data = await getData('/api/seller');
-    this.seller = data;
+    let { id } = qs.parse(location.search);
+    this.seller = await getData(`/api/seller?id=${id}`);
+    this.seller = Object.assign({}, this.seller, { id });
   },
   components: {
     VHeader

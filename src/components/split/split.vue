@@ -1,0 +1,12 @@
+<template>
+  <div class="split"></div>
+</template>
+
+<style lang="scss" scoped>
+.split {
+  background-color: #f3f5f7;
+  height: 0.32rem;
+  border-top: 1px solid rgba(7, 17, 27, 0.1);
+  border-bottom: 1px solid rgba(7, 17, 27, 0.1);
+}
+</style>
